@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ORBITAL BOUND — Space Mission Simulator</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { margin: 0; background: #010308; color: #e2e8f0; overflow-x: hidden; }
+    #spaceBg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .top-bar { position: relative; z-index: 10; display: flex; justify-content: space-between; align-items: center; background: rgba(6, 11, 25, 0.9); border-bottom: 1px solid rgba(56, 189, 248, 0.35); padding: 12px 26px; }
+    .brand-title { color: #38bdf8; font-size: 20px; font-weight: bold; letter-spacing: 2px; margin: 0; }
+    .hud-status { display: flex; align-items: center; gap: 15px; font-family: monospace; font-size: 13px; color: #4ade80; }
+    .audio-btn { background: #1e293b; color: #38bdf8; border: 1px solid #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .audio-btn:hover { background: #38bdf8; color: #0f172a; }
+    .screen-box { position: relative; z-index: 10; max-width: 1020px; margin: 35px auto; background: rgba(10, 17, 36, 0.85); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 14px; padding: 30px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85); }
+    .hero-grid { display: grid; grid-template-columns: 1fr 310px 1fr; gap: 24px; align-items: center; }
+    .name-input, select { width: 100%; padding: 11px; margin: 6px 0 14px; background: #1e293b; color: white; border: 2px solid #38bdf8; border-radius: 8px; font-size: 14px; }
+    .gender-btn { width: 100%; margin-bottom: 8px; background: #1e293b; color: white; border: 2px solid #334155; padding: 11px; border-radius: 8px; text-align: left; cursor: pointer; font-size: 14px; }
+    .gender-btn:hover, .gender-btn.active { border-color: #38bdf8; background: #172554; }
+    .pedestal-box { height: 350px; background: radial-gradient(circle, rgba(56,189,248,0.18), rgba(2,6,23,0.75)); border: 1px solid rgba(56,189,248,0.35); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .primary-btn { width: 100%; padding: 14px; background: linear-gradient(90deg, #0284c7, #2563eb); color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; }
+    .primary-btn:hover { opacity: 0.92; }
+  </style>
+</head>
+<body>
+  <canvas id="spaceBg"></canvas>
+
+  <div class="top-bar">
+    <div>
+      <p class="brand-title">ORBITAL BOUND</p>
+      <small style="color:#94a3b8;">Space Mission Design Simulator</small>
+    </div>
+    <div class="hud-status">
+      <span id="hudPilot">PILOT: UNASSIGNED</span>
+      <span id="hudAgency">AGENCY: NONE</span>
+      <button type="button" id="musicBtn" class="audio-btn">🔇 SCI-FI AUDIO: OFF</button>
+    </div>
+  </div>
+
+  <div id="screen1" class="screen-box">
+    <div class="hero-grid">
+      <div>
+        <h3 style="margin-top:0; color:#38bdf8;">1. COMMANDER IDENTITY</h3>
+        <label style="font-size:12px; color:#94a3b8; font-weight:bold;">ASTRONAUT NAME:</label>
+        <input type="text" id="pilotName" class="name-input" placeholder="Enter your name (e.g. Aria)" maxlength="24">
+        <label style="font-size:12px; color:#94a3b8; font-weight:bold;">COMMANDER PROFILE:</label>
+        <button type="button" class="gender-btn active" data-gender="Female" data-icon="👩‍🚀">👩‍🚀 Female Commander</button>
+        <button type="button" class="gender-btn" data-gender="Male" data-icon="👨‍🚀">👨‍🚀 Male Commander</button>
+        <button type="button" class="gender-btn" data-gender="Other" data-icon="🧑‍🚀">🧑‍🚀 Other / Non-Specified</button>
+      </div>
+
+      <div class="pedestal-box">
+        <canvas id="charCanvas" width="280" height="305"></canvas>
+        <small id="suitTag" style="color:#38bdf8; font-family:monospace; letter-spacing:1px;">COMMANDER // FEMALE</small>
+      </div>
+
+      <div>
+        <h3 style="margin-top:0; color:#38bdf8;">2. SPACE AGENCY</h3>
+        <p style="font-size:13px; color:#94a3b8;">Sets mission funding & engineering benchmarks:</p>
+        <select id="agencySelect">
+          <option value="NASA">NASA (United States)</option>
+          <option value="ISRO">ISRO (India)</option>
+          <option value="ESA">ESA (European Union)</option>
+          <option value="Roscosmos">Roscosmos (Russia)</option>
+          <option value="KASA">KASA (South Korea)</option>
+          <option value="JAXA">JAXA (Japan)</option>
+          <option value="ASA">ASA (Australia)</option>
+          <option value="KSA">KSA (Kenya Space Agency)</option>
+        </select>
+        <button type="button" id="initBtn" class="primary-btn">INITIALIZE MISSION CONTROL ➔</button>
+        <p id="statusMsg" style="margin-top:12px; font-size:13px; color:#4ade80; font-weight:bold;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
+  <!-- PHASE 2 STYLES & SCREENS (SCREEN 2 & SCREEN 3) -->
+  <style>
+    #screen2, #screen3 { display: none; }
+    .nav-btn { background: #1e293b; color: #38bdf8; border: 1px solid #38bdf8; padding: 7px 13px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
+    .nav-btn:hover { background: #38bdf8; color: #0f172a; }
+    .mission-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+    .mission-card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; }
+    .mission-card.locked { opacity: 0.45; border-style: dashed; }
+    .badge { display: inline-block; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; margin-bottom: 8px; }
+    .specs-row { display: flex; justify-content: space-between; border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b; padding: 8px 0; margin: 12px 0; font-size: 12px; color: #94a3b8; }
+    .variant-choices { display: flex; gap: 8px; }
+    .variant-btn { flex: 1; padding: 9px 6px; background: #1e293b; color: #38bdf8; border: 1px solid #38bdf8; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; }
+    .variant-btn:hover:not(:disabled) { background: #38bdf8; color: #0f172a; }
+    .folder-tab { background: #eab308; color: #1e293b; display: inline-block; padding: 8px 22px; font-weight: bold; font-size: 13px; border-radius: 8px 8px 0 0; }
+    .yellow-dossier { background: #fef08a; color: #1e293b; padding: 26px; border-radius: 0 10px 10px 10px; border: 3px solid #ca8a04; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7); }
+    .dossier-header { display: flex; justify-content: space-between; border-bottom: 2px solid #ca8a04; padding-bottom: 10px; margin-bottom: 14px; }
+    .stamp { border: 2px solid #dc2626; color: #dc2626; padding: 4px 10px; font-weight: bold; font-size: 12px; transform: rotate(-3deg); height: fit-content; }
+    .dossier-box { background: #fef9c3; border: 1px solid #ca8a04; padding: 10px 14px; border-radius: 6px; margin-bottom: 10px; }
+  </style>
+
+  <!-- SCREEN 2: MISSION CONFIGURATION -->
+  <div id="screen2" class="screen-box">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h2 style="margin:0; color:#38bdf8;">01 // Mission Configuration</h2>
+        <p style="margin:4px 0 0; color:#94a3b8; font-size:13px;">Choose a destination and mission type (Satellite or Womanned):</p>
+      </div>
+      <button type="button" id="backTo1Btn" class="nav-btn">← Change Pilot / Agency</button>
+    </div>
+    <div class="mission-grid">
+      <div class="mission-card">
+        <div><span class="badge" style="background:#065f46; color:#6ee7b7;">UNLOCKED • TUTORIAL</span><h3>Lunar South Pole</h3><p style="font-size:12px; color:#cbd5e1;">Starter mission. Navigate cislunar space and achieve lunar orbit.</p><div class="specs-row"><span>POWER: 2.5 kW</span><span>ORBIT: 100 km</span></div></div>
+        <div class="variant-choices"><button type="button" class="variant-btn" data-m="moon" data-t="satellite">🛰️ Satellite</button><button type="button" class="variant-btn" data-m="moon" data-t="womanned">👩‍🚀 Womanned</button></div>
+      </div>
+      <div class="mission-card">
+        <div><span class="badge" style="background:#1e3a8a; color:#93c5fd;">UNLOCKED • LEVEL 1</span><h3>Intl. Space Station</h3><p style="font-size:12px; color:#cbd5e1;">Low-Earth Orbit operations. Deploy storm radar or dock crew modules.</p><div class="specs-row"><span>POWER: 4.0 kW</span><span>ORBIT: 408 km</span></div></div>
+        <div class="variant-choices"><button type="button" class="variant-btn" data-m="iss" data-t="satellite">🛰️ Satellite</button><button type="button" class="variant-btn" data-m="iss" data-t="womanned">👩‍🚀 Womanned</button></div>
+      </div>
+      <div class="mission-card locked">
+        <div><span class="badge" style="background:#334155; color:#cbd5e1;">🔒 LOCKED • LEVEL 2</span><h3>Mars Orbital & Surface</h3><p style="font-size:12px; color:#94a3b8;">Complete Moon Tutorial or ISS Level 1 to unlock Mars missions.</p><div class="specs-row"><span>POWER: 5.5 kW</span><span>DEEP SPACE</span></div></div>
+        <button type="button" class="variant-btn" disabled>LOCKED</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: YELLOW CLASSIFIED DOSSIER -->
+  <div id="screen3" style="position:relative; z-index:10; max-width:760px; margin:35px auto; padding:0 15px;">
+    <div class="folder-tab">CLASSIFIED MISSION BRIEFING // DOSSIER #01</div>
+    <div class="yellow-dossier">
+      <div class="dossier-header">
+        <div><h2 id="dosTitle" style="margin:0;">Mission Title</h2><p id="dosSub" style="margin:4px 0 0; font-size:13px; font-weight:bold;"></p></div>
+        <div class="stamp" id="dosStamp">TUTORIAL MISSION</div>
+      </div>
+      <div class="dossier-box"><strong>💰 ALLOCATED AGENCY BUDGET:</strong><p id="dosBudget" style="font-size:19px; font-weight:bold; margin:4px 0; color:#15803d;">$0M</p><small id="dosNote" style="color:#475569;"></small></div>
+      <div class="dossier-box"><strong>⚙️ TARGET PARAMETERS:</strong><p id="dosSpecs" style="margin:4px 0 0; font-family:monospace; font-size:13px;"></p></div>
+      <div class="dossier-box"><strong>🎯 MISSION OBJECTIVES:</strong><ul id="dosObj" style="margin:6px 0 0; padding-left:20px; font-size:13px; line-height:1.5;"></ul></div>
+      <div class="dossier-box" style="border-color:#dc2626; background:#fee2e2;"><strong style="color:#b91c1c;">⏳ ROCKET CREATION DEADLINE:</strong><p id="dosDeadline" style="margin:4px 0 0; font-weight:bold; color:#991b1b; font-size:13px;"></p></div>
+      <div style="display:flex; justify-content:space-between; margin-top:16px;">
+        <button type="button" id="backTo2Btn" class="nav-btn" style="background:#475569; color:white; border:none;">← Change Mission</button>
+        <button type="button" id="toPhase3Btn" class="primary-btn" style="width:auto; padding:11px 22px; background:#15803d;">CHOOSE ROCKET SIZE ➔</button>
+      </div>
+    </div>
+  </div>
+  <!-- PHASE 3 STYLES & SCREENS (SCREEN 4A, SCREEN 4B & DESIGN REVIEW MODAL) -->
+  <style>
+    #screen4Size, #screen4Studio { display: none; }
+    .size-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+    .size-card { background: rgba(15, 23, 42, 0.92); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; transition: 0.2s; }
+    .size-card:hover { border-color: #38bdf8; transform: translateY(-3px); }
+    .studio-hud { display: flex; justify-content: space-between; align-items: center; background: #0a1124; border: 1px solid #334155; border-radius: 10px; padding: 10px 16px; margin-bottom: 12px; font-family: monospace; font-size: 13px; }
+    .studio-grid { display: grid; grid-template-columns: 340px 1fr 290px; gap: 14px; }
+    .panel { background: rgba(10, 17, 36, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 14px; }
+    .cat-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 8px 0 10px; }
+    .cat-tab { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 6px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .cat-tab.active { background: #0284c7; color: white; border-color: #38bdf8; }
+    .equip-item { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+    .equip-item.attached { border-color: #4ade80; background: #064e3b; }
+    .slider-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; }
+    .slider-row input[type="range"] { width: 150px; accent-color: #38bdf8; }
+    #studioCanvas { background: radial-gradient(circle, #0f172a 0%, #020617 100%); border: 1px solid #334155; border-radius: 10px; display: block; margin: 0 auto; }
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 50; align-items: center; justify-content: center; }
+    .modal-box { background: #0f172a; border: 2px solid #38bdf8; border-radius: 12px; padding: 24px; max-width: 490px; width: 92%; color: #e2e8f0; }
+  </style>
+
+  <!-- SCREEN 4A: ROCKET SIZE SELECTION -->
+  <div id="screen4Size" class="screen-box">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h2 style="margin:0; color:#38bdf8;">02 // Select Launch Vehicle Class</h2>
+        <p style="margin:4px 0 0; color:#94a3b8; font-size:13px;">Your rocket class sets your strict maximum spacecraft mass limit:</p>
+      </div>
+      <button type="button" id="backTo3Btn" class="nav-btn">← Back to Dossier</button>
+    </div>
+    <div class="size-grid">
+      <div class="size-card" data-size="Small" data-mass="1300" data-cost="15"><div style="font-size:36px;">🚀</div><h3>Small Launcher</h3><p style="color:#38bdf8; font-weight:bold;">Max Mass: 1,300 kg</p><p style="color:#4ade80;">Frame Cost: $15M</p></div>
+      <div class="size-card" data-size="Medium" data-mass="2600" data-cost="35"><div style="font-size:36px;">🛸</div><h3>Medium Launcher</h3><p style="color:#38bdf8; font-weight:bold;">Max Mass: 2,600 kg</p><p style="color:#4ade80;">Frame Cost: $35M</p></div>
+      <div class="size-card" data-size="Large" data-mass="5000" data-cost="70"><div style="font-size:36px;">🛰️</div><h3>Heavy-Lift Launcher</h3><p style="color:#38bdf8; font-weight:bold;">Max Mass: 5,000 kg</p><p style="color:#4ade80;">Frame Cost: $70M</p></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4B: SPACECRAFT DEVELOPMENT STUDIO -->
+  <div id="screen4Studio" class="screen-box" style="max-width:1200px;">
+    <div class="studio-hud">
+      <span id="hudTimer" style="color:#f87171; font-weight:bold;">⏳ BUILD: 06:00</span>
+      <span id="hudBudget" style="color:#4ade80;">💰 BUDGET: $0M</span>
+      <span id="hudMass" style="color:#38bdf8;">⚖️ MASS: 0 kg</span>
+      <span id="hudPower" style="color:#facc15;">⚡ POWER: 0.0 kW</span>
+      <button type="button" id="helpBtn" class="nav-btn" style="background:#ec4899; color:white; border:none;" title="Mission Specs">?</button>
+    </div>
+    <div class="studio-grid">
+      <div class="panel">
+        <strong style="color:#38bdf8; font-size:13px;">EQUIPMENT BAY (1-Click Attach/Remove)</strong>
+        <div class="cat-tabs">
+          <button type="button" class="cat-tab active" data-cat="structure">Structure</button>
+          <button type="button" class="cat-tab" data-cat="science">Science</button>
+          <button type="button" class="cat-tab" data-cat="payload">Payload</button>
+          <button type="button" class="cat-tab" data-cat="batteries">Batteries</button>
+          <button type="button" class="cat-tab" data-cat="solar">Solar</button>
+          <button type="button" class="cat-tab" data-cat="comms">Comms</button>
+        </div>
+        <div id="equipList"></div>
+        <div id="inspectBox" style="margin-top:10px; padding:8px; background:#0f172a; border:1px solid #38bdf8; border-radius:6px; font-size:12px;">Click a part button to attach or inspect specs.</div>
+      </div>
+
+      <div class="panel" style="text-align:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <button type="button" id="backToSizeBtn" class="nav-btn" style="font-size:11px;">← Change Size</button>
+          <strong id="craftTitle" style="font-size:13px;">SPACECRAFT PREVIEW</strong>
+          <span style="font-size:11px; color:#94a3b8;">Live Hull</span>
+        </div>
+        <canvas id="studioCanvas" width="420" height="320"></canvas>
+        <button type="button" id="submitBtn" class="primary-btn" style="margin-top:12px; background:#16a34a;">SUBMIT DESIGN FOR REVIEW ➔</button>
+      </div>
+
+      <div class="panel">
+        <strong style="color:#38bdf8; font-size:13px;">EXTERNAL ADJUSTMENTS</strong>
+        <div class="slider-row" style="margin-top:12px;"><span>Z Rotation</span><input type="range" id="adjRot" min="-180" max="180" value="0"></div>
+        <div class="slider-row"><span>Up / Down</span><input type="range" id="adjUp" min="-60" max="60" value="0"></div>
+        <div class="slider-row"><span>Left / Right</span><input type="range" id="adjSide" min="-50" max="50" value="0"></div>
+        <div class="slider-row"><span>Scale Size</span><input type="range" id="adjScale" min="60" max="150" value="100"></div>
+        <button type="button" id="resetAdjBtn" class="nav-btn" style="width:100%; margin-top:10px;">Reset Alignment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESIGN REVIEW & EXPEDITE CONSTRUCTION MODAL -->
+  <div id="reviewModal" class="modal-overlay">
+    <div class="modal-box">
+      <h2 id="revTitle" style="margin-top:0;">DESIGN REVIEW</h2>
+      <div id="revBody" style="font-size:14px; line-height:1.5;"></div>
+      <div id="expBox" style="display:none; margin-top:12px; padding:12px; background:#1e293b; border-radius:8px; border:1px solid #38bdf8;">
+        <p id="durText" style="margin:4px 0; color:#4ade80; font-weight:bold;"></p>
+        <p id="trnText" style="margin:4px 0; color:#facc15; font-size:13px;"></p>
+        <label style="font-size:12px;">Expedite Slider (Min 5.0 Yrs = 15m training):</label>
+        <input type="range" id="expSlider" min="0" max="100" value="0" style="width:100%; accent-color:#38bdf8;">
+        <p id="feeText" style="margin:4px 0 0; font-size:12px; color:#cbd5e1;"></p>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button type="button" id="closeRevBtn" class="nav-btn" style="flex:1;">← Back to Studio</button>
+        <button type="button" id="toPhase4Btn" class="primary-btn" style="flex:1; display:none; background:#16a34a;">START TRAINING ➔</button>
+      </div>
+    </div>
+  </div>
+     <!-- AAA AESTHETIC STYLES & SCREENS: TRAINING DECK, SMOOTH TRANSITIONS, FLIGHT & SURFACE -->
+  <style>
+    #screen5Deck, #screen6Flight, #screen7Surface { display: none; animation: screenReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1); }
+    @keyframes screenReveal {
+      from { opacity: 0; transform: translateY(18px) scale(0.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    #cinematicCurtain {
+      position: fixed; inset: 0; z-index: 950; display: none; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.97) 0%, rgba(1, 3, 8, 0.99) 100%);
+      backdrop-filter: blur(12px); opacity: 0; transition: opacity 0.45s ease;
+    }
+    #cinematicCurtain.active { opacity: 1; }
+    .curtain-ring {
+      width: 96px; height: 96px; border-radius: 50%; border: 3px solid rgba(56, 189, 248, 0.25);
+      border-top-color: #38bdf8; border-right-color: #f472b6;
+      animation: spinRing 1s linear infinite; margin-bottom: 18px;
+      box-shadow: 0 0 35px rgba(56, 189, 248, 0.35);
+    }
+    @keyframes spinRing { to { transform: rotate(360deg); } }
+
+    .deck-layout { display: grid; grid-template-columns: 320px 1fr; gap: 18px; margin-top: 14px; text-align: left; }
+    .station-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .st-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85));
+      border: 2px solid #334155; border-bottom: 4px solid #0f172a;
+      border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.18s ease; text-align: center;
+    }
+    .st-card:hover { border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(56,189,248,0.2); }
+    .st-card.active { border-color: #38bdf8; background: rgba(23, 37, 84, 0.95); box-shadow: 0 0 22px rgba(56,189,248,0.35); }
+    .st-card.done { border-color: #4ade80; background: rgba(6, 78, 59, 0.6); }
+
+    .stage-box {
+      background: rgba(6, 11, 25, 0.96); border: 2px solid rgba(56,189,248,0.45);
+      border-radius: 16px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.75);
+    }
+    .coach-card {
+      background: linear-gradient(90deg, rgba(14, 116, 144, 0.28), rgba(30, 41, 59, 0.75));
+      border-left: 4px solid #38bdf8; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    #trainCanvas, #flightCanvas, #surfaceCanvas {
+      background: #010308; border: 2px solid #1e293b; border-radius: 12px;
+      display: block; margin: 8px auto; cursor: crosshair; box-shadow: 0 0 25px rgba(0,0,0,0.8); max-width: 100%;
+    }
+    .game-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 8px; }
+    .chunky-btn {
+      background: #1e293b; color: #f8fafc; border: 2px solid #38bdf8; border-bottom: 4px solid #0284c7;
+      border-radius: 12px; padding: 9px 15px; font-weight: bold; font-size: 12.5px; cursor: pointer; transition: 0.1s;
+    }
+    .chunky-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+    .chunky-btn.ok { background: #16a34a; border-color: #86efac; border-bottom-color: #14532d; }
+
+    .flight-top-row { display: grid; grid-template-columns: 1fr 220px; gap: 14px; align-items: center; margin-top: 8px; }
+    .cam-box {
+      background: rgba(15, 23, 42, 0.95); border: 2px solid #f472b6; border-radius: 12px;
+      padding: 6px; text-align: center; box-shadow: 0 0 20px rgba(244, 114, 182, 0.25);
+    }
+    .takeoff-bar {
+      display: flex; gap: 12px; align-items: center; justify-content: center;
+      background: rgba(15,23,42,0.95); padding: 12px; border-radius: 14px; border: 1px solid #38bdf8; margin-top: 10px; flex-wrap: wrap;
+    }
+    .throttle-track { width: 180px; height: 22px; background: #0f172a; border: 2px solid #475569; border-radius: 8px; position: relative; overflow: hidden; }
+    .throttle-sweet { position: absolute; left: 62%; width: 24%; height: 100%; background: rgba(74, 222, 128, 0.35); border-left: 2px solid #4ade80; border-right: 2px solid #4ade80; }
+    #throttleFill { height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #4ade80); }
+
+    .crew-hud {
+      position: fixed; bottom: 16px; left: 16px; z-index: 45; width: 250px;
+      background: rgba(6, 12, 28, 0.95); border: 2px solid #f472b6; border-radius: 14px;
+      padding: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.85); display: none; font-size: 11.5px;
+    }
+    .vital-bar { width: 100%; height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; margin: 3px 0 7px; }
+    .vital-fill { height: 100%; transition: width 0.2s; }
+    .vital-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 6px; }
+    .keypad-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 220px; margin: 10px auto; }
+    .wire-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 340px; margin: 12px auto; }
+
+    #toastBanner {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%) scale(0.9); z-index: 999;
+      background: #16a34a; color: #fff; border: 3px solid #86efac; padding: 12px 28px; border-radius: 14px;
+      font-weight: 900; font-size: 16px; opacity: 0; pointer-events: none; transition: 0.22s ease;
+      box-shadow: 0 10px 30px rgba(22, 163, 74, 0.65);
+    }
+    #toastBanner.show { opacity: 1; transform: translateX(-50%) scale(1); }
+  </style>
+
+  <div id="toastBanner">✅ STATION READY!</div>
+
+  <div id="cinematicCurtain">
+    <div class="curtain-ring"></div>
+    <h2 id="curtainTitle" style="color:#38bdf8; margin:0 0 6px; letter-spacing:1.5px;">PREPARING NEXT PHASE...</h2>
+    <p id="curtainSub" style="color:#cbd5e1; font-size:14px; margin:0; max-width:480px;"></p>
+  </div>
+
+  <div id="crewVitalsHud" class="crew-hud">
+    <strong style="color:#f472b6;">👩‍🚀 CREW VITALS</strong>
+    <div style="margin-top:5px;">🍔 Food: <span id="vHungerTxt">100%</span></div>
+    <div class="vital-bar"><div id="vHungerBar" class="vital-fill" style="width:100%; background:#f59e0b;"></div></div>
+    <div>💧 Water: <span id="vThirstTxt">100%</span></div>
+    <div class="vital-bar"><div id="vThirstBar" class="vital-fill" style="width:100%; background:#38bdf8;"></div></div>
+    <div>🏋️ Fitness: <span id="vFitTxt">100%</span></div>
+    <div class="vital-bar"><div id="vFitBar" class="vital-fill" style="width:100%; background:#4ade80;"></div></div>
+    <div class="vital-btns">
+      <button type="button" class="chunky-btn" style="padding:5px; font-size:11px;" id="eatBtn">🍲 Eat</button>
+      <button type="button" class="chunky-btn" style="padding:5px; font-size:11px;" id="drinkBtn">🥤 Drink</button>
+      <button type="button" class="chunky-btn" style="padding:5px; font-size:11px;" id="gymBtn">🏃 Gym</button>
+    </div>
+  </div>
+
+  <div id="screen5Deck" class="screen-box" style="max-width:1120px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h2 style="margin:0; color:#38bdf8;">03 // FLIGHT DECK TRAINING (PICK ANY STATION!)</h2>
+        <p style="margin:4px 0 0; color:#94a3b8; font-size:13px;">Watch your astronaut operate each station as you master the 6 ship systems in any order:</p>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <span id="trainTimerBadge" style="font-family:monospace; font-size:14px; color:#facc15; background:#0f172a; padding:8px 14px; border-radius:10px; border:2px solid #facc15; font-weight:bold;">⏳ 15:00</span>
+        <span id="deckProgress" style="font-family:monospace; font-size:14px; color:#4ade80; background:#0f172a; padding:8px 14px; border-radius:10px; border:2px solid #4ade80; font-weight:bold;">READY: 0 / 6</span>
+      </div>
+    </div>
+
+    <div class="deck-layout">
+      <div>
+        <div id="stationGrid" class="station-grid"></div>
+        <button type="button" id="launchMissionBtn" class="primary-btn" disabled style="margin-top:14px; opacity:0.45; cursor:not-allowed; background:linear-gradient(90deg, #16a34a, #15803d);">COMPLETE ALL 6 STATIONS TO LAUNCH ➔</button>
+      </div>
+
+      <div class="stage-box">
+        <div class="coach-card">
+          <div style="font-size:28px;">🧑‍🚀</div>
+          <div>
+            <strong id="stTitle" style="color:#38bdf8; font-size:15px;">Select a Station</strong>
+            <div id="stHint" style="font-size:13px; color:#f8fafc; margin-top:2px;"></div>
+            <div id="stWhy" style="font-size:11.5px; color:#93c5fd; margin-top:2px; font-style:italic;"></div>
+          </div>
+        </div>
+        <canvas id="trainCanvas" width="660" height="260"></canvas>
+        <div id="stControls" class="game-controls"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen6Flight" class="screen-box" style="max-width:1060px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h2 id="flightHeader" style="margin:0; color:#38bdf8;">04 // LAUNCH & DEEP-SPACE FLIGHT</h2>
+        <p id="flightSub" style="margin:4px 0 0; color:#cbd5e1; font-size:13px;">Follow the Mission Coach below to blast off and fly to your destination!</p>
+      </div>
+      <div style="display:flex; gap:10px; font-family:monospace; font-size:13px;">
+        <span id="hudDist" style="color:#4ade80; background:#0f172a; padding:6px 12px; border-radius:8px; border:1px solid #4ade80;">DISTANCE: 0%</span>
+        <span id="hudHull" style="color:#38bdf8; background:#0f172a; padding:6px 12px; border-radius:8px; border:1px solid #38bdf8;">HULL: 100%</span>
+        <span id="hudOrbs" style="color:#facc15; background:#0f172a; padding:6px 12px; border-radius:8px; border:1px solid #facc15;">ORBS: 0</span>
+      </div>
+    </div>
+
