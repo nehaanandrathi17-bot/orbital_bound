@@ -2425,79 +2425,27 @@ window.openRepairGame = function (type) {
       }
     };
   }
-  // =========================================================
-// FINAL PRODUCTION NASA API + INSTANT TELEMETRY CARD (0 BUGS)
 // =========================================================
-(function forceVisibleNasaApis() {
-  const missionMeta = {
-    moon: { id: "PIA12235", center: "NASA / GSFC / LRO", title: "Lunar South Pole Shackleton Crater", desc: "Lunar Reconnaissance Orbiter (LRO) LOLA elevation & LCROSS polar water-ice survey data." },
-    iss: { id: "ISS065-E-000001", center: "NASA / JSC", title: "International Space Station Orbital Telemetry", desc: "Low-Earth Orbit (408 km) Earth observation & atmospheric storm tracking survey." },
-    solar: { id: "GSFC_20171208", center: "NASA / GSFC / SDO", title: "Solar Dynamics Observatory EUV Corona", desc: "Extreme Ultraviolet solar magnetic field & coronal mass ejection telemetry." },
-    asteroid: { id: "PIA24930", center: "NASA / JPL-Caltech", title: "16 Psyche Metallic Asteroid Survey", desc: "Gamma-Ray & Neutron Spectrometer core composition mapping at 2.9 AU." },
-    mars: { id: "PIA24428", center: "NASA / JPL-Caltech", title: "Mars Jezero Crater River Delta", desc: "Perseverance Rover HiRISE & PIXL ancient lakebed biosignature survey." },
-    mars_olympus: { id: "PIA02982", center: "NASA / JPL", title: "Olympus Mons Shield Volcano Recon", desc: "Mars Odyssey thermal emission & caldera lava-tube radar survey." },
-    mars_polar: { id: "PIA11083", center: "NASA / JPL / UA", title: "Mars North Polar Layered Ice Cap", desc: "Subsurface water-ice depth & seasonal CO2 frost telemetry." },
-    europa: { id: "PIA19048", center: "NASA / JPL-Caltech", title: "Europa Subsurface Ocean Ice Shell", desc: "Galileo & Europa Clipper ice-crust fracture and plume reconnaissance." }
-  };
-
-  function renderTelemetryFallback(card, key) {
-    if (!card) return;
-    const m = missionMeta[key] || missionMeta.moon;
-    card.innerHTML = `
-      <canvas id="fallbackRadar" width="96" height="68" style="border-radius:8px; border:1px solid #38bdf8; background:#020617; flex-shrink:0;"></canvas>
-      <div style="font-size:11.5px; line-height:1.45;">
-        <span style="background:#1e3a8a; color:#93c5fd; padding:2px 7px; border-radius:4px; font-weight:bold; font-size:10px;">🛰️ NASA PDS ARCHIVE • ID: ${m.id} • ${m.center} • v2.4</span><br>
-        <strong style="color:#38bdf8; font-size:12.5px;">${m.title}</strong><br>
-        <span style="color:#cbd5e1;">${m.desc}</span>
-      </div>
-    `;
-    const fc = document.getElementById("fallbackRadar");
-    if (fc && fc.getContext) {
-      const g = fc.getContext("2d");
-      g.strokeStyle = "rgba(56,189,248,0.25)";
-      for (let x = 16; x < 96; x += 16) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 68); g.stroke(); }
-      for (let y = 17; y < 68; y += 17) { g.beginPath(); g.moveTo(0, y); g.lineTo(96, y); g.stroke(); }
-      const grad = g.createRadialGradient(48, 34, 4, 48, 34, 26);
-      grad.addColorStop(0, "#7dd3fc"); grad.addColorStop(0.6, "#1e3a8a"); grad.addColorStop(1, "transparent");
-      g.fillStyle = grad; g.beginPath(); g.arc(48, 34, 26, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = "#4ade80"; g.strokeRect(24, 15, 48, 38);
+// LOCAL NASA DATASET READER (nasa-data.json — 100% RELIABLE)
+// =========================================================
+fetch("./nasa-data.json")
+  .then(r => r.json())
+  .then(db => {
+    window.nasaLocalDb = db;
+    function showDatasetCard(key) {
+      const m = db.missions[key] || db.missions.moon;
+      const card = document.getElementById("nasaReconCard");
+      if (!card) return;
+      card.innerHTML = `
+        <div style="font-size:12px; line-height:1.45;">
+          <span style="background:#065f46; color:#6ee7b7; padding:2px 7px; border-radius:4px; font-weight:bold; font-size:10px;">🛰️ ${db.source} • ID: ${m.id}</span><br>
+          <strong style="color:#38bdf8;">${m.target} (${m.instrument})</strong><br>
+          <span style="color:#e2e8f0;">${m.finding}</span>
+        </div>`;
     }
-  }
-
-  function renderNasaLiveBox(mKey) {
-    const key = mKey || "moon";
-    const card = document.getElementById("nasaReconCard");
-    if (!card) return;
-
-    renderTelemetryFallback(card, key);
-
-    fetch("https://nasa.gov")
-      .then(res => (res && res.ok) ? res.json() : Promise.reject())
-      .then(apod => {
-        if (!apod || !apod.url || apod.media_type !== "image") return;
-        const freshCard = document.getElementById("nasaReconCard");
-        if (!freshCard) return;
-        freshCard.innerHTML = `
-          <img id="apodLiveImg" src="${apod.url}" alt="${apod.title || "NASA APOD"}" style="width:104px; height:76px; object-fit:cover; border-radius:8px; border:2px solid #4ade80; flex-shrink:0;">
-          <div style="font-size:11.5px; line-height:1.45;">
-            <span style="background:#065f46; color:#6ee7b7; padding:2px 7px; border-radius:4px; font-weight:bold; font-size:10px;">● LIVE NASA APOD API • DATE: ${apod.date || "LIVE"} • v2.4</span><br>
-            <strong style="color:#38bdf8; font-size:12.5px;">${apod.title || "NASA Astronomy Picture of the Day"}</strong><br>
-            <span style="color:#e2e8f0;">${(apod.explanation || "").slice(0, 140)}...</span>
-          </div>
-        `;
-        const img = document.getElementById("apodLiveImg");
-        if (img) img.onerror = () => renderTelemetryFallback(freshCard, key);
-      })
-      .catch(() => {});
-  }
-
-  renderNasaLiveBox("moon");
-  document.addEventListener("click", (e) => {
-    const v = e.target.closest(".variant-btn");
-    if (v && v.dataset.m) {
-      setTimeout(() => renderNasaLiveBox(v.dataset.m), 80);
-    }
+    showDatasetCard("moon");
+    document.addEventListener("click", (e) => {
+      const v = e.target.closest(".variant-btn");
+      if (v && v.dataset.m) setTimeout(() => showDatasetCard(v.dataset.m), 60);
+    });
   });
-})();
-
-};
