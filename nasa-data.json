@@ -1,0 +1,18 @@
+{
+  "source": "NASA JPL Small-Body Database & Planetary Data System (PDS)",
+  "missions": {
+    "moon": { "id": "PIA12235", "instrument": "LRO LOLA & LCROSS", "target": "Shackleton Crater (-89.9°S)", "finding": "Subsurface water-ice concentration confirmed at 5.6% by mass in permanently shadowed craters." },
+    "iss": { "id": "ISS065-E-000001", "instrument": "GPM & LIS Lightning Sensor", "target": "Low-Earth Orbit (408 km)", "finding": "Real-time tropical cyclone precipitation rates and upper-atmosphere telemetry." },
+    "solar": { "id": "SDO-AIA-171", "instrument": "SDO Atmospheric Imaging Assembly", "target": "Solar Corona (1.3M Kelvin)", "finding": "Coronal mass ejection magnetic loop tracking at 12-second cadence." },
+    "asteroid": { "id": "PSYCHE-2023", "instrument": "Psyche Gamma-Ray & Neutron Spectrometer", "target": "16 Psyche (2.9 AU)", "finding": "Exposed nickel-iron planetary core density measured at 3,400–4,100 kg/m³." },
+    "mars": { "id": "PIA24428", "instrument": "Perseverance PIXL & MOXIE", "target": "Jezero Crater Delta", "finding": "Organic-bearing mudstones analyzed; MOXIE generated 122g O₂ from Martian CO₂." },
+    "mars_olympus": { "id": "ODY-THEMIS-01", "instrument": "Mars Odyssey THEMIS", "target": "Olympus Mons (21.9 km)", "finding": "Basaltic lava tube thermal inertia mapped across 624 km shield caldera." },
+    "mars_polar": { "id": "MRO-SHARAD-09", "instrument": "MRO Shallow Radar (SHARAD)", "target": "Planum Boreum (82°N)", "finding": "Layered water-ice sheet thickness measured at 1.8 km beneath seasonal CO₂ frost." },
+    "europa": { "id": "PIA19048", "instrument": "Galileo NIMS & Europa Clipper", "target": "Conamara Chaos", "finding": "Subsurface liquid ocean estimated at 60–150 km depth beneath 15–25 km ice shell." }
+  },
+  "near_earth_asteroids": [
+    { "name": "99942 Apophis", "diameter_m": 370, "velocity_kms": 30.7 },
+    { "name": "101955 Bennu", "diameter_m": 490, "velocity_kms": 28.0 },
+    { "name": "162173 Ryugu", "diameter_m": 896, "velocity_kms": 24.3 }
+  ]
+}
