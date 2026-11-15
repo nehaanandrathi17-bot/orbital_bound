@@ -2425,27 +2425,4 @@ window.openRepairGame = function (type) {
       }
     };
   }
-// =========================================================
-// LOCAL NASA DATASET READER (nasa-data.json — 100% RELIABLE)
-// =========================================================
-fetch("./nasa-data.json")
-  .then(r => r.json())
-  .then(db => {
-    window.nasaLocalDb = db;
-    function showDatasetCard(key) {
-      const m = db.missions[key] || db.missions.moon;
-      const card = document.getElementById("nasaReconCard");
-      if (!card) return;
-      card.innerHTML = `
-        <div style="font-size:12px; line-height:1.45;">
-          <span style="background:#065f46; color:#6ee7b7; padding:2px 7px; border-radius:4px; font-weight:bold; font-size:10px;">🛰️ ${db.source} • ID: ${m.id}</span><br>
-          <strong style="color:#38bdf8;">${m.target} (${m.instrument})</strong><br>
-          <span style="color:#e2e8f0;">${m.finding}</span>
-        </div>`;
-    }
-    showDatasetCard("moon");
-    document.addEventListener("click", (e) => {
-      const v = e.target.closest(".variant-btn");
-      if (v && v.dataset.m) setTimeout(() => showDatasetCard(v.dataset.m), 60);
-    });
-  });
+};
